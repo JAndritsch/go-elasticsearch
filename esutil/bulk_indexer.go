@@ -417,6 +417,7 @@ func (w *worker) run() {
 			w.bi.config.DebugLogger.Printf("[worker-%03d] Started\n", w.id)
 		}
 		defer func() {
+			fmt.Println("WORKER CLEANUP TRIGGERED")
 			w.flush(ctx)
 			w.ticker.Stop()
 			w.bi.wg.Done()
