@@ -416,6 +416,7 @@ func (w *worker) run() {
 		if w.bi.config.DebugLogger != nil {
 			w.bi.config.DebugLogger.Printf("[worker-%03d] Started\n", w.id)
 		}
+		fmt.Println("WORKER CLEANUP DEFERRAL")
 		defer func() {
 			fmt.Println("WORKER CLEANUP TRIGGERED")
 			w.flush(ctx)
