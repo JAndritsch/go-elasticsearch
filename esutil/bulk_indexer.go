@@ -279,6 +279,12 @@ type bulkIndexerStats struct {
 	flushedBytes uint64
 }
 
+var bufPool = &sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
+
 // NewBulkIndexer creates a new bulk indexer.
 func NewBulkIndexer(cfg BulkIndexerConfig) (BulkIndexer, error) {
 	if cfg.Client == nil {
@@ -304,6 +310,11 @@ func NewBulkIndexer(cfg BulkIndexerConfig) (BulkIndexer, error) {
 	bi := bulkIndexer{
 		config: cfg,
 		stats:  &bulkIndexerStats{},
+	}
+
+	for _, w := range bi.workers {
+		w.buf.Reset()
+		bufPool.Put(w.buf)
 	}
 
 	bi.init()
@@ -379,7 +390,7 @@ func (bi *bulkIndexer) init() {
 			id:     i,
 			ch:     bi.queue,
 			bi:     bi,
-			buf:    bytes.NewBuffer(make([]byte, 0, bi.config.FlushBytes)),
+			buf:    bufPool.Get().(*bytes.Buffer),
 			ticker: time.NewTicker(bi.config.FlushInterval),
 		}
 		w.run()
